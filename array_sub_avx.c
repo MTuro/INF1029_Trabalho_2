@@ -60,20 +60,20 @@ int main(int argc, char *argv[]) {
     float scalar_odds = 5.0f;
     float *nxt_evens = evens; 
     float *nxt_odds = odds; 
+    __m256 scal_evn = _mm256_set1_ps(scalar_evens);
+    __m256 scal_ods = _mm256_set1_ps(scalar_odds);
     for ( i = 0; 
         i < N; 
         i += 8, nxt_evens += 8, nxt_odds += 8) {
 
         /* Store the elements of the scalar on arrays */
-        __m256 scal_evn = _mm256_set_ps(scalar_evens);
-        __m256 scal_ods = _mm256_set_ps(odds_evens);
-        *nxt_evens = scalar_evens;
-        *nxt_odds = scalar_odds;
-    }
+        _mm256_store_ps(nxt_evens, scal_evn);
+        _mm256_store_ps(nxt_odds, scal_ods);
+        }
 
     /* Compute the difference between the two arrays */
-    __m256 m256_evens = _mm256_load_ps(evens);
-    __m256 m256_odds = _mm256_load_ps(odds);
+    __m256 m256_evens;
+    __m256 m256_odds;
     nxt_evens = evens;
     nxt_odds = odds;
     float *nxt_result = result;
@@ -87,9 +87,7 @@ int main(int argc, char *argv[]) {
 
         __m256 m256_result = _mm256_sub_ps(m256_evens, m256_odds);
         //printf("%p %p %p\n", m256_result, m256_evens, m256_odds);
-        for (int j = 0; j < 8; j++) {
-            nxt_result[j] = (float) m256_result[j];
-        }
+        _mm256_store_ps(nxt_result, m256_result);
     }
 
     // Check for errors (all values should be 3.0f)
